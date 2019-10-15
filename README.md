@@ -2,7 +2,6 @@
 Esempio di scrittura per funzioni.
 
 '''
-
 calc (delay, time)
 {
 	History direction(-1);	
