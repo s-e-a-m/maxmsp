@@ -1,0 +1,11 @@
+History zeta(0);
+Delay delay_samples(192000);
+del_read = delay_samples.read(floor(SAMPLERATE*in4));
+out1 = del_read;
+negin2 = (1 - in2);
+damp = in2 * del_read;
+zeta = zeta*negin2;
+zdamp = damp + negh;
+feedback = damp * in3;
+engine = in1 + feedback;
+delay_samples.write(engine);
