@@ -1,7 +1,7 @@
 # maxmsp
 Esempio di scrittura per funzioni.
 
-'''
+|||
 calc (delay, time)
 {
 	History direction(-1);	
@@ -25,4 +25,4 @@ calc (delay, time)
 Param ramptime(75);
 
 out1, out2, out3 = calc(in1, ramptime);
-'''
+|||
