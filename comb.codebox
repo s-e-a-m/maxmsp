@@ -1,11 +1,23 @@
-History zeta(0);
-Delay delay_samples(192000);
-del_read = delay_samples.read(floor(SAMPLERATE*in4));
-out1 = del_read;
-negin2 = (1 - in2);
-damp = in2 * del_read;
-zeta = zeta*negin2;
-zdamp = damp + negh;
-feedback = damp * in3;
-engine = in1 + feedback;
-delay_samples.write(engine);
+comb (sig, delaytime, fbgain, damping)
+{
+	Delay delay_1((samplerate/10));
+	History zeta(0);
+	msval = clamp(delaytime, 0., 1.);
+	del_read = delay_1.read(floor(msval*(samplerate/10)));
+	//out1 = del_read;
+	dampval = clamp(damping, 0., 1.);
+	damp = del_read * dampval;
+	negin2 = 1 - dampval;
+	negh = zeta * negin2;
+	zdamp = damp + negh;
+	fbval = clamp(fbgain, -0.99, 0.99);
+	feedback = zdamp * fbval;
+	engine = sig + feedback;
+	zeta_next_10 = fixdenorm(zdamp);
+	delay_1.write(engine);
+	zeta = zeta_next_10;
+	
+	return del_read;
+}
+
+out1 = comb(in1, in2, in3, in4);
