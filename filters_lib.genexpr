@@ -1,6 +1,5 @@
 //Genexpr used to create a basic library which includes a comb filter and an allpass filter based on the model of the "freeverb".
 
-```
 comb_freeverb (sig, delaytime, fbgain, damping)
 {
   Delay delay_1((samplerate*0.05)); // estimated table size for efficient comb-filtering
@@ -40,4 +39,3 @@ allpass_freeverb (sig, delaytime, fbgain)
   
   return engine;
 }
-```
