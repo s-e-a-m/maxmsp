@@ -1,11 +1,11 @@
 //Genexpr used to create a basic library which includes a comb filter and an allpass filter based on the model of the "freeverb".
 
-comb_freeverb (sig, delaytime, fbgain, damping)
+comb_freeverb (sig, spread, fbgain, damping)
 {
   Delay delay_1((samplerate*0.05)); // estimated table size for efficient comb-filtering
   History zeta(0);
-  msval = (clamp(delaytime, 0., 50.)/1000);
-  del_read = delay_1.read(floor(msval*samplerate));
+  delval = (floor(spread/44100.*samplerate));
+  del_read = delay_1.read(delval);
   //out1 = del_read;
   dampval = clamp(damping, 0., 1.);
   damp = del_read * dampval;
@@ -24,11 +24,11 @@ comb_freeverb (sig, delaytime, fbgain, damping)
 
 //out1 = comb_freeverb(in1, in2, in3, in4);
 
-allpass_freeverb (sig, delaytime, fbgain)
+allpass_freeverb (sig, spread, fbgain)
 {
   Delay delay_1((samplerate*0.05));
-  msval = (clamp(delaytime, 0., 50.)/1000);
-  del_read = delay_1.read(floor(msval*samplerate));
+  delval = (floor(spread/44100.*samplerate));
+  del_read = delay_1.read(delval);
   engine = sig - del_read;
   //out1 = engine;
   fbval = clamp(fbgain, 0., 0.5);
