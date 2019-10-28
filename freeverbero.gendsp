@@ -1,19 +1,21 @@
 require "filters_lib"; //require of the "filters_lib" library
-c1 = comb_freeverb(in1, in2+25, in3, in4);
-c2 = comb_freeverb(in1, in2+26, in3, in4);
-c3 = comb_freeverb(in1, in2+28, in3, in4);
-c4 = comb_freeverb(in1, in2+30, in3, in4);
-c5 = comb_freeverb(in1, in2+32, in3, in4);
-c6 = comb_freeverb(in1, in2+33, in3, in4);
-c7 = comb_freeverb(in1, in2+35, in3, in4);
-c8 = comb_freeverb(in1, in2+36, in3, in4);
+spread = in2*46;
+
+c1 = comb_freeverb(in1, 1116+spread, in3, in4);
+c2 = comb_freeverb(in1, 1188+spread, in3, in4);
+c3 = comb_freeverb(in1, 1277+spread, in3, in4);
+c4 = comb_freeverb(in1, 1356+spread, in3, in4);
+c5 = comb_freeverb(in1, 1422+spread, in3, in4);
+c6 = comb_freeverb(in1, 1491+spread, in3, in4);
+c7 = comb_freeverb(in1, 1557+spread, in3, in4);
+c8 = comb_freeverb(in1, 1617+spread, in3, in4);
 //The original coefficents of the filters's delay are converted in milliseconds values
 
 combank = (c1+c2+c3+c4+c5+c6+c7+c8);
 
 //The feedback values of the allpass's filters are controlled by a different parameters because is clipped (0, 0.5) and cannot be negative (they should be static).
-a1 = allpass_freeverb(combank, 12, in5);
-a2 = allpass_freeverb(a1, 10, in5);
-a3 = allpass_freeverb(a2, 7, in5);
-a4 = allpass_freeverb(a3, 5, in5);
+a1 = allpass_freeverb(combank, 556+spread, in5);
+a2 = allpass_freeverb(a1, 441+spread, in5);
+a3 = allpass_freeverb(a2, 341+spread, in5);
+a4 = allpass_freeverb(a3, 225+spread, in5);
 out1 = a4;
