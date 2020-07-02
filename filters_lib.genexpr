@@ -1,10 +1,11 @@
-//Genexpr used to create a basic library which includes a comb filter and an allpass filter based on the model of the "freeverb".
+//Genexpr code used to create a basic filters library which started from the comb and allpass filters of  the Freeverb's model.
+//-----------------------------------------------------------------------------------------------------------------------
 
-comb_freeverb (sig, spread, fbgain, damping)
+comb_freeverb (sig, del, fbgain, damping)
 {
   Delay delay_1((samplerate*0.05)); // estimated table size for efficient comb-filtering
   History zeta(0);
-  delval = (floor(spread/44100.*samplerate));
+  delval = (floor(del/44100.*samplerate));
   del_read = delay_1.read(delval);
   //out1 = del_read;
   dampval = clamp(damping, 0., 1.);
@@ -12,22 +13,103 @@ comb_freeverb (sig, spread, fbgain, damping)
   negin2 = 1 - dampval;
   negh = zeta * negin2;
   zdamp = damp + negh;
-  fbval = clamp(fbgain, -0.99, 0.99);
+  fbval = clamp(fbgain, -0.99, 0.99); //Clamped value to guarantee stability
   feedback = zdamp * fbval;
   engine = sig + feedback;
   zeta_next_10 = fixdenorm(zdamp);
   delay_1.write(engine);
   zeta = zeta_next_10;
-  
+
   return del_read;
 }
-
 //out1 = comb_freeverb(in1, in2, in3, in4);
+//-------------------------------------------------------------------------------
 
-allpass_freeverb (sig, spread, fbgain)
+
+
+ccrma_lbcf (sig, del, fbgain, damping)
+{
+	Delay delay_1((samplerate*0.05));
+	History zeta(0);
+	delval = (floor(del/44100*samplerate));
+	del_read = delay_1.read(delval);
+	dampval = clamp(damping, 0.01, 1.0);
+	damp = (del_read*dampval) + (zeta*(1-dampval));
+	fbval = clamp(fbgain, 0., 0.99);
+	lpfeedback = damp*fbval;
+	engine = sig+lpfeedback;
+	zeta_next_10 = fixdenorm(del_read);
+	delay_1.write(engine);
+	zeta = zeta_next_10;
+
+	return engine;
+}
+//out1 = ccrma_lbcf (in1, in2, in3, in4);
+//-------------------------------------------------------------------------------
+
+
+
+ccrma_lbcf (sig, del, fbgain)
+{
+	Delay delay_1((samplerate*0.05));
+	History zeta(0);
+	delval = (floor(del/44100*samplerate));
+	del_read = delay_1.read(delval);
+	lp = (del_read*0.8) + (zeta*-0.2);
+	fbval = clamp(fbgain, 0., 0.99);
+	lpfeedback = lp*fbval;
+	engine = sig+lpfeedback;
+	zeta_next_10 = fixdenorm(del_read);
+	delay_1.write(engine);
+	zeta = zeta_next_10;
+
+	return engine;
+}
+//out1 = ccrma_lbcf (in1, in2, in3);
+//-------------------------------------------------------------------------------
+
+
+
+ccrma_ffcf (sig, del, ffgain)
+{
+	Delay delay_1((samplerate*0.05));
+	delval = (floor(del/44100.*samplerate));
+	del_read = delay_1.read(delval);
+	ffval = clamp(ffgain, -0.99, 0.99);
+	feedforward = del_read * ffval;
+	engine = sig + feedforward;
+	//out1 = add_6;
+	delay_1.write(sig);
+
+	return engine;
+}
+//out1 = ccrma_ffcf (in1, in2, in3);
+//-------------------------------------------------------------------------------
+
+
+
+ccrma_onepole (sig, fc)
+{
+	History zeta(0);
+	cutoff = clamp(fc, 1, 20000);
+	a0 = sin(cutoff*(pi/(samplerate*0.5)));
+	b0 = 1-(clamp(a0, -0.99, 0.99));
+	zetafb = zeta*b0;
+	engine = (sig*a0)+zetafb;
+	zeta_next_12 = fixdenorm(engine);
+	zeta = zeta_next_12;
+
+	return engine;
+}
+//out1 = ccrma_onepole(in1, in2);
+//-------------------------------------------------------------------------------
+
+
+
+allpass_freeverb (sig, del, fbgain)
 {
   Delay delay_1((samplerate*0.05));
-  delval = (floor(spread/44100.*samplerate));
+  delval = (floor(del/44100.*samplerate));
   del_read = delay_1.read(delval);
   engine = sig - del_read;
   //out1 = engine;
@@ -36,6 +118,73 @@ allpass_freeverb (sig, spread, fbgain)
   zeta = sig + fb_gain;
   zeta_bitmask = fixdenorm(zeta);
   delay_1.write(zeta_bitmask);
-  
+
   return engine;
 }
+//-------------------------------------------------------------------------------
+
+
+
+Schroeder_allpass (sig, del, fbgain)
+{
+	Delay delay_1((samplerate*0.05));
+	delval = (floor(del/44100*samplerate));
+	del_read = delay_1.read(delval);
+	fbval = clamp(fbgain, 0.01, 0.99);
+	fbgain = del_read*fbval;
+	zeta1 = sig + fbgain;
+	invfbgain = zeta1 * fbval*-1;
+	zeta2 = del_read + invfbgain;
+	delay_1.write(zeta1);
+
+	return zeta2;
+	}
+//out1 = Schroeder_allpass (in1, in2, in3);
+//-------------------------------------------------------------------------------
+
+
+
+ccrma_lbcf (sig, del, fbgain, lf_shelf)
+{
+	Delay delay_1((samplerate*0.05));
+	delval = (floor(del/44100.*samplerate));
+	del_read = delay_1.read(delval);
+	fbval = clamp(fbgain, -0.99, 0.99);
+	feedback = del_read * (fbval*-1);
+  lf_feedback = ccrma_onepole (feedback, lf_shelf);
+	engine = sig + lf_feedback;
+	//out1 = add_6;
+	delay_1.write(engine);
+
+	return engine;
+}
+//-------------------------------------------------------------------------------
+
+
+
+resonfilter (sig, centerfreq, Q, gain)
+{
+	// filter input/output history:
+	History x1, x2, y1, y2;
+	x = sig;	// input signal
+	cf = centerfreq; 	// cutoff frequency
+	q = Q;  // Q factor
+  filtergain = clamp(gain, 0., 100.);  // gain of the filter signal
+	// calculate coefficients:
+	twopi_over_sr = twopi/samplerate;
+	bw = cf/q; 	// bandwidth
+	r = exp(-bw*twopi_over_sr);
+	c1 = 2*r*cos(cf * twopi_over_sr);
+	c2 = -r*r;
+	// generate output:
+	y = (1-r) * (x - r*x2) + c1*y1 + c2*y2;
+  out = (y*filtergain);
+	// filter history cascade:
+	y2 = y1;
+	y1 = y;
+	x2 = x1;
+	x1 = x;
+
+	return out;
+}
+//-------------------------------------------------------------------------------
