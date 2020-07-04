@@ -1,0 +1,100 @@
+//Implementation of the Freeverb with the usage of filters_lib library
+//______________________________________________________________________________//
+
+
+//CCRMA Steady version of the freeverb from the default signal-processing settings "https://ccrma.stanford.edu/~jos/pasp/Freeverb.html"
+require "filters_lib";
+spread = 23; //Values from the Richard W.E. Furse Freeverbsource file
+
+//Left channel signal-processing
+cl1 = ccrma_lbcf (in1, 1557, 0.84, 0.2);
+cl2 = ccrma_lbcf (in1, 1617, 0.84, 0.2);
+cl3 = ccrma_lbcf (in1, 1491, 0.84, 0.2);
+cl4 = ccrma_lbcf (in1, 1422, 0.84, 0.2);
+cl5 = ccrma_lbcf (in1, 1277, 0.84, 0.2);
+cl6 = ccrma_lbcf (in1, 1356, 0.84, 0.2);
+cl7 = ccrma_lbcf (in1, 1188, 0.84, 0.2);
+cl8 = ccrma_lbcf (in1, 1116, 0.84, 0.2);
+
+combank = cl1+cl2+cl3+cl4+cl5+cl6+cl7+cl8;
+
+apl1 = Schroeder_allpass (combank, 225, 0.5);
+apl2 = Schroeder_allpass (apl1, 556, 0.5);
+apl3 = Schroeder_allpass (apl2, 441, 0.5);
+apl4 = Schroeder_allpass (apl3, 341, 0.5);
+//______________________________________________//
+
+//Right channel signal-processing
+cr1 = ccrma_lbcf (in2, 1557+spread, 0.84, 0.2);
+cr2 = ccrma_lbcf (in2, 1617+spread, 0.84, 0.2);
+cr3 = ccrma_lbcf (in2, 1491+spread, 0.84, 0.2);
+cr4 = ccrma_lbcf (in2, 1422+spread, 0.84, 0.2);
+cr5 = ccrma_lbcf (in2, 1277+spread, 0.84, 0.2);
+cr6 = ccrma_lbcf (in2, 1356+spread, 0.84, 0.2);
+cr7 = ccrma_lbcf (in2, 1188+spread, 0.84, 0.2);
+cr8 = ccrma_lbcf (in2, 1116+spread, 0.84, 0.2);
+
+combank = cr1+cr2+cr3+cr4+cr5+cr6+cr7+cr8;
+
+apr1 = Schroeder_allpass (combank, 225+spread, 0.5);
+apr2 = Schroeder_allpass (apr1, 556+spread, 0.5);
+apr3 = Schroeder_allpass (apr2, 441+spread, 0.5);
+apr4 = Schroeder_allpass (apr3, 341+spread, 0.5);
+//_______________________________________________//
+
+out1 = apl4;
+out2 = apr4;
+//_______________________________________________//
+
+//Dynamic version of the freeverb with control on the following parameters:
+//Decay = (comb filters feedback gain)
+//Diffusion = (allpass filter feedback gain)
+//damping = (ratio between direct signal and filtered signal of comb filters)
+//spread = (difference between left and right channels samples of delay for each filter)
+require "filters_lib";
+leftch = in1;
+rightch = in2;
+decay = clamp(in3, 0.01, 0.99);
+diffusion = (clamp(in4, 0., 1.)*0.5);
+damping = clamp(in5, 0.1, 1.);
+spread = clamp(in6, 0, 100);
+
+
+//Left channel signal-processing
+cl1 = ccrma_lbcf (leftch, 1557, decay, damping);
+cl2 = ccrma_lbcf (leftch, 1617, decay, damping);
+cl3 = ccrma_lbcf (leftch, 1491, decay, damping);
+cl4 = ccrma_lbcf (leftch, 1422, decay, damping);
+cl5 = ccrma_lbcf (leftch, 1277, decay, damping);
+cl6 = ccrma_lbcf (leftch, 1356, decay, damping);
+cl7 = ccrma_lbcf (leftch, 1188, decay, damping);
+cl8 = ccrma_lbcf (leftch, 1116, decay, damping);
+
+combank = cl1+cl2+cl3+cl4+cl5+cl6+cl7+cl8;
+
+apl1 = Schroeder_allpass (combank, 225, diffusion);
+apl2 = Schroeder_allpass (apl1, 556, diffusion);
+apl3 = Schroeder_allpass (apl2, 441, diffusion);
+apl4 = Schroeder_allpass (apl3, 341, diffusion);
+//______________________________________________//
+
+//Right channel signal-processing
+cr1 = ccrma_lbcf (in2, 1557+spread, decay, damping);
+cr2 = ccrma_lbcf (in2, 1617+spread, decay, damping);
+cr3 = ccrma_lbcf (in2, 1491+spread, decay, damping);
+cr4 = ccrma_lbcf (in2, 1422+spread, decay, damping);
+cr5 = ccrma_lbcf (in2, 1277+spread, decay, damping);
+cr6 = ccrma_lbcf (in2, 1356+spread, decay, damping);
+cr7 = ccrma_lbcf (in2, 1188+spread, decay, damping);
+cr8 = ccrma_lbcf (in2, 1116+spread, decay, damping);
+
+combank = cr1+cr2+cr3+cr4+cr5+cr6+cr7+cr8;
+
+apr1 = Schroeder_allpass (combank, 225+spread, diffusion);
+apr2 = Schroeder_allpass (apr1, 556+spread, diffusion);
+apr3 = Schroeder_allpass (apr2, 441+spread, diffusion);
+apr4 = Schroeder_allpass (apr3, 341+spread, diffusion);
+//_______________________________________________//
+
+out1 = apl4;
+out2 = apr4;
