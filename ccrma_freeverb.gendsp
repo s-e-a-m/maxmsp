@@ -1,0 +1,278 @@
+{
+	"patcher" : 	{
+		"fileversion" : 1,
+		"appversion" : 		{
+			"major" : 8,
+			"minor" : 0,
+			"revision" : 1,
+			"architecture" : "x64",
+			"modernui" : 1
+		}
+,
+		"classnamespace" : "dsp.gen",
+		"rect" : [ 42.0, 1157.0, 1852.0, 969.0 ],
+		"bglocked" : 0,
+		"openinpresentation" : 0,
+		"default_fontsize" : 12.0,
+		"default_fontface" : 0,
+		"default_fontname" : "Arial",
+		"gridonopen" : 1,
+		"gridsize" : [ 15.0, 15.0 ],
+		"gridsnaponopen" : 1,
+		"objectsnaponopen" : 1,
+		"statusbarvisible" : 2,
+		"toolbarvisible" : 1,
+		"lefttoolbarpinned" : 0,
+		"toptoolbarpinned" : 0,
+		"righttoolbarpinned" : 0,
+		"bottomtoolbarpinned" : 0,
+		"toolbars_unpinned_last_save" : 0,
+		"tallnewobj" : 0,
+		"boxanimatetime" : 200,
+		"enablehscroll" : 1,
+		"enablevscroll" : 1,
+		"devicewidth" : 0.0,
+		"description" : "",
+		"digest" : "",
+		"tags" : "",
+		"style" : "",
+		"subpatcher_template" : "",
+		"boxes" : [ 			{
+				"box" : 				{
+					"id" : "obj-12",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 683.79998779296875, 429.066680908203125, 35.0, 22.0 ],
+					"text" : "out 3"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-11",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 1270.13330078125, 429.066680908203125, 35.0, 22.0 ],
+					"text" : "out 4"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-10",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 1358.169921875, 14.0, 133.0, 22.0 ],
+					"text" : "in 6 @comment spread"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-7",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 1206.535888671875, 14.0, 142.0, 22.0 ],
+					"text" : "in 5 @comment damping"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-3",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 1058.823486328125, 14.0, 141.0, 22.0 ],
+					"text" : "in 4 @comment diffusion"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-9",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 636.3333740234375, 14.0, 120.0, 22.0 ],
+					"text" : "in 2 @comment sigR"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-8",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 636.3333740234375, 429.066680908203125, 35.0, 22.0 ],
+					"text" : "out 2"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"code" : "require \"filters_lib\";\r\nleftch = in1;\r\nrightch = in2;\r\ndecay = clamp(in3, 0.01, 0.99);\r\ndiffusion = (clamp(in4, 0., 1.)*0.5);\r\ndamping = clamp(in5, 0.1, 1.);\r\nspread = clamp(in6, 0, 100);\r\n\r\n\r\n//Left channel signal-processing\r\ncl1 = ccrma_lbcf (leftch, 1557, decay, damping);\r\ncl2 = ccrma_lbcf (leftch, 1617, decay, damping);\r\ncl3 = ccrma_lbcf (leftch, 1491, decay, damping);\r\ncl4 = ccrma_lbcf (leftch, 1422, decay, damping);\r\ncl5 = ccrma_lbcf (leftch, 1277, decay, damping);\r\ncl6 = ccrma_lbcf (leftch, 1356, decay, damping);\r\ncl7 = ccrma_lbcf (leftch, 1188, decay, damping);\r\ncl8 = ccrma_lbcf (leftch, 1116, decay, damping);\r\n\r\ncombank = cl1+cl2+cl3+cl4+cl5+cl6+cl7+cl8;\r\n\r\napl1 = Schroeder_allpass (combank, 225, diffusion);\r\napl2 = Schroeder_allpass (apl1, 556, diffusion);\r\napl3 = Schroeder_allpass (apl2, 441, diffusion);\r\napl4 = Schroeder_allpass (apl3, 341, diffusion);\r\n//______________________________________________//\r\n\r\n//Right channel signal-processing\r\ncr1 = ccrma_lbcf (in2, 1557+spread, decay, damping);\r\ncr2 = ccrma_lbcf (in2, 1617+spread, decay, damping);\r\ncr3 = ccrma_lbcf (in2, 1491+spread, decay, damping);\r\ncr4 = ccrma_lbcf (in2, 1422+spread, decay, damping);\r\ncr5 = ccrma_lbcf (in2, 1277+spread, decay, damping);\r\ncr6 = ccrma_lbcf (in2, 1356+spread, decay, damping);\r\ncr7 = ccrma_lbcf (in2, 1188+spread, decay, damping);\r\ncr8 = ccrma_lbcf (in2, 1116+spread, decay, damping);\r\n\r\ncombank = cr1+cr2+cr3+cr4+cr5+cr6+cr7+cr8;\r\n\r\napr1 = Schroeder_allpass (combank, 225+spread, diffusion);\r\napr2 = Schroeder_allpass (apr1, 556+spread, diffusion);\r\napr3 = Schroeder_allpass (apr2, 441+spread, diffusion);\r\napr4 = Schroeder_allpass (apr3, 341+spread, diffusion);\r\n//_______________________________________________//\r\n\r\nout1 = apl4;\r\nout2 = apr4;",
+					"fontface" : 0,
+					"fontname" : "Lucida Console",
+					"fontsize" : 12.0,
+					"id" : "obj-6",
+					"maxclass" : "codebox",
+					"numinlets" : 6,
+					"numoutlets" : 2,
+					"outlettype" : [ "", "" ],
+					"patching_rect" : [ 683.79998779296875, 97.333328247070313, 605.3333740234375, 273.333343505859375 ]
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"code" : "require \"filters_lib\";\r\nspread = 23; //Values from the Richard W.E. Furse Freeverbsource file\r\n\r\n//Left channel signal-processing\r\ncl1 = ccrma_lbcf (in1, 1557, 0.84, 0.2);\r\ncl2 = ccrma_lbcf (in1, 1617, 0.84, 0.2);\r\ncl3 = ccrma_lbcf (in1, 1491, 0.84, 0.2);\r\ncl4 = ccrma_lbcf (in1, 1422, 0.84, 0.2);\r\ncl5 = ccrma_lbcf (in1, 1277, 0.84, 0.2);\r\ncl6 = ccrma_lbcf (in1, 1356, 0.84, 0.2);\r\ncl7 = ccrma_lbcf (in1, 1188, 0.84, 0.2);\r\ncl8 = ccrma_lbcf (in1, 1116, 0.84, 0.2);\r\n\r\ncombank = cl1+cl2+cl3+cl4+cl5+cl6+cl7+cl8;\r\n\r\napl1 = Schroeder_allpass (combank, 225, 0.5);\r\napl2 = Schroeder_allpass (apl1, 556, 0.5);\r\napl3 = Schroeder_allpass (apl2, 441, 0.5);\r\napl4 = Schroeder_allpass (apl3, 341, 0.5);\r\n//______________________________________________//\r\n\r\n//Right channel signal-processing\r\ncr1 = ccrma_lbcf (in2, 1557+spread, 0.84, 0.2);\r\ncr2 = ccrma_lbcf (in2, 1617+spread, 0.84, 0.2);\r\ncr3 = ccrma_lbcf (in2, 1491+spread, 0.84, 0.2);\r\ncr4 = ccrma_lbcf (in2, 1422+spread, 0.84, 0.2);\r\ncr5 = ccrma_lbcf (in2, 1277+spread, 0.84, 0.2);\r\ncr6 = ccrma_lbcf (in2, 1356+spread, 0.84, 0.2);\r\ncr7 = ccrma_lbcf (in2, 1188+spread, 0.84, 0.2);\r\ncr8 = ccrma_lbcf (in2, 1116+spread, 0.84, 0.2);\r\n\r\ncombank = cr1+cr2+cr3+cr4+cr5+cr6+cr7+cr8;\r\n\r\napr1 = Schroeder_allpass (combank, 225+spread, 0.5);\r\napr2 = Schroeder_allpass (apr1, 556+spread, 0.5);\r\napr3 = Schroeder_allpass (apr2, 441+spread, 0.5);\r\napr4 = Schroeder_allpass (apr3, 341+spread, 0.5);\r\n//_______________________________________________//\r\n\r\nout1 = apl4;\r\nout2 = apr4;",
+					"fontface" : 0,
+					"fontname" : "Lucida Console",
+					"fontsize" : 12.0,
+					"id" : "obj-5",
+					"maxclass" : "codebox",
+					"numinlets" : 2,
+					"numoutlets" : 2,
+					"outlettype" : [ "", "" ],
+					"patching_rect" : [ 50.0, 97.333328247070313, 605.3333740234375, 273.333343505859375 ]
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-1",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 50.0, 14.0, 118.0, 22.0 ],
+					"text" : "in 1 @comment sigL"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-2",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 918.33331298828125, 14.0, 128.0, 22.0 ],
+					"text" : "in 3 @comment decay"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-4",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 49.999980926513672, 429.066680908203125, 35.0, 22.0 ],
+					"text" : "out 1"
+				}
+
+			}
+ ],
+		"lines" : [ 			{
+				"patchline" : 				{
+					"destination" : [ "obj-5", 0 ],
+					"order" : 1,
+					"source" : [ "obj-1", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-6", 0 ],
+					"order" : 0,
+					"source" : [ "obj-1", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-6", 5 ],
+					"source" : [ "obj-10", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-6", 2 ],
+					"source" : [ "obj-2", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-6", 3 ],
+					"source" : [ "obj-3", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-4", 0 ],
+					"source" : [ "obj-5", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-8", 0 ],
+					"source" : [ "obj-5", 1 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-11", 0 ],
+					"source" : [ "obj-6", 1 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-12", 0 ],
+					"source" : [ "obj-6", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-6", 4 ],
+					"source" : [ "obj-7", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-5", 1 ],
+					"order" : 1,
+					"source" : [ "obj-9", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-6", 1 ],
+					"order" : 0,
+					"source" : [ "obj-9", 0 ]
+				}
+
+			}
+ ]
+	}
+
+}

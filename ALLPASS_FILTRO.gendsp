@@ -1,0 +1,156 @@
+{
+	"patcher" : 	{
+		"fileversion" : 1,
+		"appversion" : 		{
+			"major" : 8,
+			"minor" : 0,
+			"revision" : 1,
+			"architecture" : "x64",
+			"modernui" : 1
+		}
+,
+		"classnamespace" : "dsp.gen",
+		"rect" : [ 40.0, 83.0, 1276.0, 731.0 ],
+		"bglocked" : 0,
+		"openinpresentation" : 0,
+		"default_fontsize" : 12.0,
+		"default_fontface" : 0,
+		"default_fontname" : "Arial",
+		"gridonopen" : 1,
+		"gridsize" : [ 15.0, 15.0 ],
+		"gridsnaponopen" : 1,
+		"objectsnaponopen" : 1,
+		"statusbarvisible" : 2,
+		"toolbarvisible" : 1,
+		"lefttoolbarpinned" : 0,
+		"toptoolbarpinned" : 0,
+		"righttoolbarpinned" : 0,
+		"bottomtoolbarpinned" : 0,
+		"toolbars_unpinned_last_save" : 0,
+		"tallnewobj" : 0,
+		"boxanimatetime" : 200,
+		"enablehscroll" : 1,
+		"enablevscroll" : 1,
+		"devicewidth" : 0.0,
+		"description" : "",
+		"digest" : "",
+		"tags" : "",
+		"style" : "",
+		"subpatcher_template" : "",
+		"boxes" : [ 			{
+				"box" : 				{
+					"id" : "obj-2",
+					"linecount" : 20,
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 602.652099609375, 139.600006103515625, 331.548004150390625, 275.0 ],
+					"presentation_linecount" : 20,
+					"text" : "allpass (sig, delaytime, fbgain)\n{\n\tDelay delay_dir((samplerate/10));\n\tDelay delay_fb((samplerate/10));\n\tdelval = clamp(delaytime, 0., 1.);\n\tdel_dir_read = delay_dir.read(floor(delval*(samplerate/10)));\n\tdel_fb_read = delay_fb.read(floor(delval*(samplerate/10)));\n\tsub = sig - del_fb_read;\n\tfbval = clamp(fbgain, -0.99, 0.99);\n\tdel_gain = sub * fbval;\n\tbitmask = fixdenorm(del_gain + del_dir_read);\n\t//out1 = bitmask;\n\tdelay_dir.write(sig);\n\tdelay_fb.write(bitmask);\n\t\n\treturn bitmask;\n}\n\nout1 = allpass(in1, in2, in3);"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Lato",
+					"fontsize" : 12.0,
+					"id" : "obj-14",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 295.100006103515625, 82.666656494140625, 155.0, 23.0 ],
+					"text" : "in 2 @comment \"delay time\""
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Lato",
+					"fontsize" : 12.0,
+					"id" : "obj-12",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 35.0, 515.26666259765625, 38.0, 23.0 ],
+					"text" : "out 1"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Lato",
+					"fontsize" : 12.0,
+					"id" : "obj-11",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 555.20001220703125, 82.666656494140625, 164.0, 23.0 ],
+					"text" : "in 3 @comment feedback gain"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Lato",
+					"fontsize" : 12.0,
+					"id" : "obj-1",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 35.0, 82.666656494140625, 30.0, 23.0 ],
+					"text" : "in 1"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"code" : "allpass (sig, delaytime, fbgain)\r\n{\r\n\tDelay delay_dir((samplerate/10));\n\tDelay delay_fb((samplerate/10));\r\n\tdelval = clamp(delaytime, 0., 1.);\n\tdel_dir_read = delay_dir.read(floor(delval*(samplerate/10)));\n\tdel_fb_read = delay_fb.read(floor(delval*(samplerate/10)));\n\tsub = sig - del_fb_read;\n\tfbval = clamp(fbgain, -0.99, 0.99);\n\tdel_gain = sub * fbval;\n\tbitmask = fixdenorm(del_gain + del_dir_read);\n\t//out1 = bitmask;\n\tdelay_dir.write(sig);\n\tdelay_fb.write(bitmask);\r\n\t\r\n\treturn bitmask;\r\n}\r\n\r\nout1 = allpass(in1, in2, in3);",
+					"fontface" : 0,
+					"fontname" : "Lucida Console",
+					"fontsize" : 12.0,
+					"id" : "obj-5",
+					"maxclass" : "codebox",
+					"numinlets" : 3,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 35.0, 139.600006103515625, 539.20001220703125, 325.82965087890625 ]
+				}
+
+			}
+ ],
+		"lines" : [ 			{
+				"patchline" : 				{
+					"destination" : [ "obj-5", 0 ],
+					"source" : [ "obj-1", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-5", 2 ],
+					"source" : [ "obj-11", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-5", 1 ],
+					"source" : [ "obj-14", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-12", 0 ],
+					"source" : [ "obj-5", 0 ]
+				}
+
+			}
+ ],
+		"autosave" : 0
+	}
+
+}

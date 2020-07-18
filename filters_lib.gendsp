@@ -1,0 +1,63 @@
+{
+	"patcher" : 	{
+		"fileversion" : 1,
+		"appversion" : 		{
+			"major" : 8,
+			"minor" : 0,
+			"revision" : 1,
+			"architecture" : "x64",
+			"modernui" : 1
+		}
+,
+		"classnamespace" : "dsp.gen",
+		"rect" : [ 34.0, 77.0, 1468.0, 753.0 ],
+		"bglocked" : 0,
+		"openinpresentation" : 0,
+		"default_fontsize" : 12.0,
+		"default_fontface" : 0,
+		"default_fontname" : "Arial",
+		"gridonopen" : 1,
+		"gridsize" : [ 15.0, 15.0 ],
+		"gridsnaponopen" : 1,
+		"objectsnaponopen" : 1,
+		"statusbarvisible" : 2,
+		"toolbarvisible" : 1,
+		"lefttoolbarpinned" : 0,
+		"toptoolbarpinned" : 0,
+		"righttoolbarpinned" : 0,
+		"bottomtoolbarpinned" : 0,
+		"toolbars_unpinned_last_save" : 0,
+		"tallnewobj" : 0,
+		"boxanimatetime" : 200,
+		"enablehscroll" : 1,
+		"enablevscroll" : 1,
+		"devicewidth" : 0.0,
+		"description" : "",
+		"digest" : "",
+		"tags" : "",
+		"style" : "",
+		"subpatcher_template" : "",
+		"boxes" : [ 			{
+				"box" : 				{
+					"bgcolor" : [ 0.545098039215686, 0.0, 0.0, 1.0 ],
+					"code" : "//Genexpr code used to create a basic filters library which started from the comb and allpass filters of  the Freeverb's model.\r\n//-----------------------------------------------------------------------------------------------------------------------\r\n\r\ncomb_freeverb (sig, del, fbgain, damping)\r\n{\r\n  Delay delay_1((samplerate*0.05)); // estimated table size for efficient comb-filtering\r\n  History zeta(0);\r\n  delval = (floor(del/44100.*samplerate));\r\n  del_read = delay_1.read(delval);\r\n  //out1 = del_read;\r\n  dampval = clamp(damping, 0., 1.);\r\n  damp = del_read * dampval;\r\n  negin2 = 1 - dampval;\r\n  negh = zeta * negin2;\r\n  zdamp = damp + negh;\r\n  fbval = clamp(fbgain, -0.99, 0.99); //Clamped value to guarantee stability\r\n  feedback = zdamp * fbval;\r\n  engine = sig + feedback;\r\n  zeta_next_10 = fixdenorm(zdamp);\r\n  delay_1.write(engine);\r\n  zeta = zeta_next_10;\r\n\r\n  return del_read;\r\n}\r\n//out1 = comb_freeverb(in1, in2, in3, in4);\r\n//-------------------------------------------------------------------------------\r\n\r\n\r\n\r\nccrma_lbcf (sig, del, fbgain, damping)\r\n{\r\n\tDelay delay_1((samplerate*0.05));\r\n\tHistory zeta(0);\r\n\tdelval = (floor(del/44100*samplerate));\r\n\tdel_read = delay_1.read(delval);\r\n\tdampval = clamp(damping, 0.01, 1.0);\r\n\tdamp = (del_read*dampval) + (zeta*(1-dampval));\r\n\tfbval = clamp(fbgain, 0., 0.99);\r\n\tlpfeedback = damp*fbval;\r\n\tengine = sig+lpfeedback;\r\n\tzeta_next_10 = fixdenorm(del_read);\r\n\tdelay_1.write(engine);\r\n\tzeta = zeta_next_10;\r\n\r\n\treturn engine;\r\n}\r\n//out1 = ccrma_lbcf (in1, in2, in3, in4);\r\n//-------------------------------------------------------------------------------\r\n\r\n\r\n\r\nccrma_lbcf (sig, del, fbgain)\r\n{\r\n\tDelay delay_1((samplerate*0.05));\r\n\tHistory zeta(0);\r\n\tdelval = (floor(del/44100*samplerate));\r\n\tdel_read = delay_1.read(delval);\r\n\tlp = (del_read*0.8) + (zeta*-0.2);\r\n\tfbval = clamp(fbgain, 0., 0.99);\r\n\tlpfeedback = lp*fbval;\r\n\tengine = sig+lpfeedback;\r\n\tzeta_next_10 = fixdenorm(del_read);\r\n\tdelay_1.write(engine);\r\n\tzeta = zeta_next_10;\r\n\r\n\treturn engine;\r\n}\r\n//out1 = ccrma_lbcf (in1, in2, in3);\r\n//-------------------------------------------------------------------------------\r\n\r\n\r\n\r\nccrma_ffcf (sig, del, ffgain)\r\n{\r\n\tDelay delay_1((samplerate*0.05));\r\n\tdelval = (floor(del/44100.*samplerate));\r\n\tdel_read = delay_1.read(delval);\r\n\tffval = clamp(ffgain, -0.99, 0.99);\r\n\tfeedforward = del_read * ffval;\r\n\tengine = sig + feedforward;\r\n\t//out1 = add_6;\r\n\tdelay_1.write(sig);\r\n\r\n\treturn engine;\r\n}\r\n//out1 = ccrma_ffcf (in1, in2, in3);\r\n//-------------------------------------------------------------------------------\r\n\r\n\r\n\r\nccrma_onepole (sig, fc)\r\n{\r\n\tHistory zeta(0);\r\n\tcutoff = clamp(fc, 1, 20000);\r\n\ta0 = sin(cutoff*(pi/(samplerate*0.5)));\r\n\tb0 = 1-(clamp(a0, -0.99, 0.99));\r\n\tzetafb = zeta*b0;\r\n\tengine = (sig*a0)+zetafb;\r\n\tzeta_next_12 = fixdenorm(engine);\r\n\tzeta = zeta_next_12;\r\n\r\n\treturn engine;\r\n}\r\n//out1 = ccrma_onepole(in1, in2);\r\n//-------------------------------------------------------------------------------\r\n\r\n\r\n\r\nallpass_freeverb (sig, del, fbgain)\r\n{\r\n  Delay delay_1((samplerate*0.05));\r\n  delval = (floor(del/44100.*samplerate));\r\n  del_read = delay_1.read(delval);\r\n  engine = sig - del_read;\r\n  //out1 = engine;\r\n  fbval = clamp(fbgain, 0., 0.5);\r\n  fb_gain = del_read * fbval;\r\n  zeta = sig + fb_gain;\r\n  zeta_bitmask = fixdenorm(zeta);\r\n  delay_1.write(zeta_bitmask);\r\n\r\n  return engine;\r\n}\r\n//-------------------------------------------------------------------------------\r\n\r\n\r\n\r\nSchroeder_allpass (sig, del, fbgain)\r\n{\r\n\tDelay delay_1((samplerate*0.05));\r\n\tdelval = (floor(del/44100*samplerate));\r\n\tdel_read = delay_1.read(delval);\r\n\tfbval = clamp(fbgain, 0.01, 0.99);\r\n\tfbgain = del_read*fbval;\r\n\tzeta1 = sig + fbgain;\r\n\tinvfbgain = zeta1 * fbval*-1;\r\n\tzeta2 = del_read + invfbgain;\r\n\tdelay_1.write(zeta1);\r\n\r\n\treturn zeta2;\r\n\t}\r\n//out1 = Schroeder_allpass (in1, in2, in3);\r\n//-------------------------------------------------------------------------------\r\n\r\n\r\n\r\nccrma_lbcf (sig, del, fbgain, lf_shelf)\r\n{\r\n\tDelay delay_1((samplerate*0.05));\r\n\tdelval = (floor(del/44100.*samplerate));\r\n\tdel_read = delay_1.read(delval);\r\n\tfbval = clamp(fbgain, -0.99, 0.99);\r\n\tfeedback = del_read * (fbval*-1);\r\n  lf_feedback = ccrma_onepole (feedback, lf_shelf);\r\n\tengine = sig + lf_feedback;\r\n\t//out1 = add_6;\r\n\tdelay_1.write(engine);\r\n\r\n\treturn engine;\r\n}\r\n//-------------------------------------------------------------------------------\r\n\r\n\r\n\r\nresonfilter (sig, centerfreq, Q, gain)\r\n{\r\n\t// filter input/output history:\r\n\tHistory x1, x2, y1, y2;\r\n\tx = sig;\t// input signal\r\n\tcf = centerfreq; \t// cutoff frequency\r\n\tq = Q;  // Q factor\r\n  filtergain = clamp(gain, 0., 100.);  // gain of the filter signal\r\n\t// calculate coefficients:\r\n\ttwopi_over_sr = twopi/samplerate;\r\n\tbw = cf/q; \t// bandwidth\r\n\tr = exp(-bw*twopi_over_sr);\r\n\tc1 = 2*r*cos(cf * twopi_over_sr);\r\n\tc2 = -r*r;\r\n\t// generate output:\r\n\ty = (1-r) * (x - r*x2) + c1*y1 + c2*y2;\r\n  out = (y*filtergain);\r\n\t// filter history cascade:\r\n\ty2 = y1;\r\n\ty1 = y;\r\n\tx2 = x1;\r\n\tx1 = x;\r\n\r\n\treturn out;\r\n}\r\n//-------------------------------------------------------------------------------\r\n",
+					"fontface" : 0,
+					"fontname" : "Lucida Console",
+					"fontsize" : 12.0,
+					"id" : "obj-1",
+					"maxclass" : "codebox",
+					"numinlets" : 1,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 18.463199615478516, 13.113652229309082, 1164.908203125, 2425.24951171875 ],
+					"textcolor" : [ 0.0, 0.0, 0.0, 1.0 ]
+				}
+
+			}
+ ],
+		"lines" : [  ],
+		"autosave" : 0,
+		"editing_bgcolor" : [ 0.9, 0.9, 0.9, 1.0 ]
+	}
+
+}
